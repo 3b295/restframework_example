@@ -1,4 +1,5 @@
-from django.core.validators import RegexValidator
+from decimal import Decimal
+from django.core.validators import RegexValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.admin import site
@@ -11,7 +12,7 @@ class User(AbstractUser):
 
 class BaseProductModel(models.Model):
     name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=20, decimal_places=2)
+    price = models.DecimalField(max_digits=20, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
 
     def __str__(self):
         return self.name
@@ -51,6 +52,9 @@ class Order(models.Model):
 
     def __str__(self):
         return self.buyer.username
+
+    class Meta:
+        ordering = ('timestamp',)
 
 
 class OrderMap(models.Model):
