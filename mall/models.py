@@ -9,6 +9,9 @@ from django.contrib import admin
 class User(AbstractUser):
     qq = models.CharField(max_length=20, blank=True, verbose_name='QQ')
 
+    class Meta(AbstractUser.Meta):
+        pass
+
 
 class BaseProductModel(models.Model):
     name = models.CharField(max_length=100)
