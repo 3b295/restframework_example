@@ -1,22 +1,26 @@
+from rest_framework import filters
 from rest_framework import generics
 from rest_framework.permissions import DjangoModelPermissionsOrAnonReadOnly, IsAuthenticated
-from .permissions import IsOwner
-from rest_framework import permissions
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import mixins
+from django_filters.rest_framework import DjangoFilterBackend
 
 from . import models
 from . import serializers
+from .filters import IsOwnerFilterBackend
+from .permissions import IsOwner
 
 
 class ProductList(generics.ListAPIView):
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name', )
+
     queryset = models.BaseProductModel.objects.all()
     serializer_class = serializers.ProductSerializer
 
 
 class GameList(generics.ListCreateAPIView):
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name', )
+
     queryset = models.GameModel.objects.all()
     serializer_class = serializers.GameSerializer
 
@@ -28,6 +32,9 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ClothingList(generics.ListCreateAPIView):
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name', )
+
     queryset = models.ClothingModel.objects.all()
     serializer_class = serializers.ClothingSerializer
 
@@ -38,6 +45,10 @@ class ClothingDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class BookList(generics.ListCreateAPIView):
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
+    search_fields = ('name', )
+    filter_fields = ('name', 'id', 'price')
+
     queryset = models.BookModel.objects.all()
     serializer_class = serializers.BookSerializer
 
@@ -48,16 +59,8 @@ class BookDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ShoppingCartList(generics.ListCreateAPIView):
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
-        """
-        This view should return a list of all the purchases
-        for the currently authenticated user.
-        """
-        user = self.request.user
-        return models.ShoppingCartModel.objects.filter(owner=user)
-
+    filter_backends = (IsOwnerFilterBackend,)
+    queryset = models.ShoppingCartModel.objects.all()
     serializer_class = serializers.ShoppingCartSerializer
 
 
