@@ -20,6 +20,12 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'buyer', 'address', 'phone_number', 'timestamp']
 
 
+@admin.register(models.ShoppingCartModel)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    # filter_horizontal = ('products',)
+    ...
+
+
 site.register(models.User, UserAdmin)  # FIX:自己添加的字段不在这个表单内
 
 

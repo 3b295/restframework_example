@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Sum, Q
 from . import models
 
 
@@ -26,3 +27,9 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.ShoppingCartModel
+        fields = '__all__'

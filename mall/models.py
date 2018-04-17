@@ -59,12 +59,27 @@ class Order(models.Model):
 
 
 class OrderMap(models.Model):
+    """多对多表"""
     order = models.ForeignKey('Order', on_delete=models.CASCADE)
     product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE)
 
     real_price = models.DecimalField(max_digits=20, decimal_places=2, blank=False)
     numbers = models.PositiveIntegerField(default=1, blank=False)
 
+
+class ShoppingCartModel(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(BaseProductModel, on_delete=models.CASCADE)
+    product_num = models.IntegerField(default=1)
+    add_time = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "购物车"
+        verbose_name_plural = verbose_name
+        unique_together = ('owner', 'product')
+
+    def __str__(self):
+        return '{} | {}'.format(self.owner.username, self.product.name)
 
 
 
