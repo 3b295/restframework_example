@@ -41,7 +41,7 @@ class BookModel(BaseProductModel):
     publisher = models.CharField(max_length=255)
 
 
-class Order(models.Model):
+class OrderModel(models.Model):
     buyer = models.ForeignKey('User', on_delete=models.Case)
     goods = models.ManyToManyField(BaseProductModel, through='OrderMap')
     timestamp = models.DateTimeField(auto_now=True)
@@ -60,7 +60,7 @@ class Order(models.Model):
 
 class OrderMap(models.Model):
     """多对多表"""
-    order = models.ForeignKey('Order', on_delete=models.CASCADE)
+    order = models.ForeignKey('OrderModel', on_delete=models.CASCADE)
     product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE)
 
     real_price = models.DecimalField(max_digits=20, decimal_places=2, blank=False)

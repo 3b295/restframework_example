@@ -14,7 +14,7 @@ class MediaInline(admin.StackedInline):
     model = models.OrderMap
 
 
-@admin.register(models.Order)
+@admin.register(models.OrderModel)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [MediaInline]
     list_display = ['id', 'buyer', 'address', 'phone_number', 'timestamp']
