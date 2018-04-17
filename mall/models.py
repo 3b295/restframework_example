@@ -2,8 +2,6 @@ from decimal import Decimal
 from django.core.validators import RegexValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.contrib.admin import site
-from django.contrib import admin
 
 
 class User(AbstractUser):
@@ -68,17 +66,6 @@ class OrderMap(models.Model):
     numbers = models.PositiveIntegerField(default=1, blank=False)
 
 
-class MediaInline(admin.StackedInline):
-    model = OrderMap
-
-
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    inlines = [MediaInline]
-    list_display = ['id', 'buyer', 'address', 'phone_number', 'timestamp']
-
-
-site.register((User, GameModel, ClothingModel, BookModel))
 
 
 
