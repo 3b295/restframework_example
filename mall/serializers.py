@@ -29,7 +29,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    name = serializers.ReadOnlyField(source='product.name')
+    price = serializers.ReadOnlyField(source='product.price')
 
     class Meta:
         model = models.ShoppingCartModel
-        fields = '__all__'
+        fields = ('id', 'product_num', 'name', 'owner', 'price', 'product')
