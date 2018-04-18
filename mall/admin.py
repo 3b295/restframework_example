@@ -17,7 +17,7 @@ class OrderMediaInline(admin.StackedInline):
 @admin.register(models.OrderModel)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderMediaInline]
-    list_display = ['id', 'buyer', 'address', 'phone_number', 'timestamp']
+    list_display = ['id', 'owner', 'address', 'phone_number', 'timestamp']
 
 
 site.register(models.User, UserAdmin)  # FIX:自己添加的字段不在这个表单内

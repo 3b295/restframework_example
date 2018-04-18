@@ -1,5 +1,7 @@
 from rest_framework import filters
 from rest_framework import generics
+from rest_framework import mixins
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import DjangoModelPermissionsOrAnonReadOnly, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -14,8 +16,14 @@ from .permissions import IsOwner
 class ProductList(generics.ListAPIView):
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('name',)
-    filter_fields = ('category__name', )
+    filter_fields = ('category__name',)
 
+    queryset = models.BaseProductModel.objects.all()
+    serializer_class = serializers.ProductSerializer
+
+
+class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
     queryset = models.BaseProductModel.objects.all()
     serializer_class = serializers.ProductSerializer
 
@@ -81,3 +89,44 @@ class ShoppingCartDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsOwner)
     queryset = models.ShoppingCartModel.objects.all()
     serializer_class = serializers.ShoppingCartSerializer
+
+
+class OrderList(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    filter_backends = (IsOwnerFilterBackend,)
+    queryset = models.OrderModel.objects.all()
+    serializer_class = serializers.OrderSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        order = models.OrderModel.objects.create(owner=request.user,
+                                                 address=serializer.data['address'],
+                                                 phone_number=serializer.data['phone_number'],
+                                                 )
+
+        for item in models.ShoppingCartModel.objects.filter(owner=request.user):
+            if item.is_active:
+                models.OrderMap.objects.create(order=order,
+                                               product=item.product,
+                                               real_price=item.product.price,
+                                               numbers=item.numbers)
+                item.delete()
+                print('1')
+                from IPython import embed;embed()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class OrderDetail(mixins.RetrieveModelMixin,
+                  generics.GenericAPIView):
+    permission_classes = (IsAuthenticated, IsOwner)
+    queryset = models.OrderModel.objects.all()
+    serializer_class = serializers.OrderSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+

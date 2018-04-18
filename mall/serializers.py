@@ -45,11 +45,21 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class OrderMapSerializer(serializers.ModelSerializer):
+    product = serializers.HyperlinkedRelatedField(view_name='product-detail', read_only=True)
+
+    class Meta:
+        model = models.OrderMap
+        fields = '__all__'
+
+
 class OrderSerializer(serializers.ModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    name = serializers.ReadOnlyField(source='product.name')
-    price = serializers.ReadOnlyField(source='order_map.price')
+    id = serializers.HyperlinkedRelatedField(read_only=True, view_name='order-detail')
+    ordermap_set = OrderMapSerializer(many=True, read_only=True)
 
     class Meta:
         model = models.OrderModel
-        fields = '__all__'
+        fields = ('id', 'ordermap_set', 'timestamp', 'address', 'phone_number', 'owner')
+
+

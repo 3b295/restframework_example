@@ -88,24 +88,23 @@ class CategoryModel(models.Model):
 
 
 class OrderModel(models.Model):
-    buyer = models.ForeignKey('User', on_delete=models.Case)
-    goods = models.ManyToManyField(BaseProductModel, through='OrderMap')
+    owner = models.ForeignKey('User', on_delete=models.Case)
+
+    products = models.ManyToManyField(BaseProductModel, through='OrderMap')
+
     timestamp = models.DateTimeField(auto_now=True)
     address = models.CharField(max_length=255, blank=False)
-
-    phone_regex = RegexValidator(regex=r'^\+?\d\d+$',
-                                 message=r"电话号码必须满足 ^\+?\d\d+$ 规则.")
+    phone_regex = RegexValidator(regex=r'^\+?\d\d+$', message=r"电话号码必须满足 ^\+?\d\d+$ 规则.")
     phone_number = models.CharField(validators=[phone_regex], blank=True, max_length=20)
 
     def __str__(self):
-        return self.buyer.username
+        return self.owner.username
 
     class Meta:
         ordering = ('timestamp',)
 
 
 class OrderMap(models.Model):
-    """多对多表"""
     order = models.ForeignKey('OrderModel', on_delete=models.CASCADE)
     product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE)
 
