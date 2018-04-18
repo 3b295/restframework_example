@@ -9,6 +9,7 @@ from django.db.models import Sum, F, FloatField
 
 from . import models
 from . import serializers
+from . import paginations
 from .filters import IsOwnerFilterBackend
 from .permissions import IsOwner
 
@@ -17,6 +18,7 @@ class ProductList(generics.ListAPIView):
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('name',)
     filter_fields = ('category__name',)
+    pagination_class = paginations.StandardResultsSetPagination
 
     queryset = models.BaseProductModel.objects.all()
     serializer_class = serializers.ProductSerializer
@@ -34,6 +36,7 @@ class GameList(generics.ListCreateAPIView):
 
     queryset = models.GameModel.objects.all()
     serializer_class = serializers.GameSerializer
+    pagination_class = paginations.StandardResultsSetPagination
 
 
 class GameDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -48,6 +51,7 @@ class ClothingList(generics.ListCreateAPIView):
 
     queryset = models.ClothingModel.objects.all()
     serializer_class = serializers.ClothingSerializer
+    pagination_class = paginations.StandardResultsSetPagination
 
 
 class ClothingDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -61,6 +65,7 @@ class BookList(generics.ListCreateAPIView):
 
     queryset = models.BookModel.objects.all()
     serializer_class = serializers.BookSerializer
+    pagination_class = paginations.StandardResultsSetPagination
 
 
 class BookDetail(generics.RetrieveUpdateDestroyAPIView):
