@@ -20,17 +20,18 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'buyer', 'address', 'phone_number', 'timestamp']
 
 
-class ShoppingMediaInline(admin.StackedInline):
-    model = models.ShoppingCartMap
-
-
-@admin.register(models.ShoppingCartModel)
-class ShoppingCartAdmin(admin.ModelAdmin):
-    inlines = [ShoppingMediaInline]
-    #filter_horizontal = ('goods',)
+# class ShoppingMediaInline(admin.StackedInline):
+#     model = models.ShoppingCartModel
+#
+#
+# @admin.register(models.ShoppingCartModel)
+# class ShoppingCartAdmin(admin.ModelAdmin):
+#     inlines = [ShoppingMediaInline]
+#     #filter_horizontal = ('goods',)
 
 
 site.register(models.User, UserAdmin)  # FIX:自己添加的字段不在这个表单内
+site.register(models.ShoppingCartModel)
 
 
 

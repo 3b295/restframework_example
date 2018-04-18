@@ -26,29 +26,17 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ShoppingCartGoodSerializer(serializers.ModelSerializer):
+class ShoppingCartReadOnlySerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.ShoppingCartMap
-        fields = ('numbers', 'product')
+        model = models.ShoppingCartModel
+        fields = ('id', 'numbers', 'product', 'is_active')
         depth = 1
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-    """
-    方便读
-    """
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    shoppingcartmap_set = ShoppingCartGoodSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = models.ShoppingCartModel
-        fields = ('shoppingcartmap_set', 'id', 'owner')
-
-
-class ShoppingCartForChangeSerializer(serializers.ModelSerializer):
-    """方便写"""
-    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    goods = serializers.PrimaryKeyRelatedField(queryset=models.BaseProductModel.objects.all(), many=True)
+    numbers = serializers.IntegerField(default=1, min_value=1)
+    is_active = serializers.BooleanField(default=True)
 
     class Meta:
         model = models.ShoppingCartModel

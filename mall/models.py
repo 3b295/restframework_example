@@ -7,6 +7,8 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     qq = models.CharField(max_length=20, blank=True, verbose_name='QQ')
 
+    shoppingcart = models.ManyToManyField('BaseProductModel', through='ShoppingCartModel', related_name='owner')
+
     class Meta(AbstractUser.Meta):
         pass
 
@@ -67,24 +69,21 @@ class OrderMap(models.Model):
     numbers = models.PositiveIntegerField(default=1, blank=False)
 
 
-class ShoppingCartMap(models.Model):
-    shopping_cart = models.ForeignKey('ShoppingCartModel', on_delete=models.CASCADE)
+class ShoppingCartModel(models.Model):
+    """
+    用户 和 商品 多对多的表
+    """
+    owner = models.ForeignKey('User', on_delete=models.CASCADE)
     product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE)
 
     numbers = models.PositiveIntegerField(default=1, blank=False)
-
-
-class ShoppingCartModel(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    goods = models.ManyToManyField(BaseProductModel, through='ShoppingCartMap', related_name='shopping_cart')
+    is_active = models.BooleanField(default=True, blank=False)
 
     class Meta:
-        verbose_name = "购物车"
-        verbose_name_plural = verbose_name
+        unique_together = ('owner', 'product')
 
     def __str__(self):
-        return "{}'s Shopping".format(self.owner.username)
-
+        return "{}'s {}".format(self.owner.username, self.product.name)
 
 
 
