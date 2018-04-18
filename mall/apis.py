@@ -58,13 +58,19 @@ class BookDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.BookSerializer
 
 
-class ShoppingCartList(generics.ListCreateAPIView):
-    filter_backends = (IsOwnerFilterBackend,)
-    queryset = models.ShoppingCartModel.objects.all()
-    serializer_class = serializers.ShoppingCartSerializer
-
-
 class ShoppingCartDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsOwner)
     serializer_class = serializers.ShoppingCartSerializer
     queryset = models.ShoppingCartModel.objects.all()
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+        if self.request.method in ('PUT', 'PATCH'):
+            serializer_class = serializers.ShoppingCartForChangeSerializer
+        if self.request.method == 'GET':
+            serializer_class = serializers.ShoppingCartSerializer
+        return serializer_class
+
+
+
+

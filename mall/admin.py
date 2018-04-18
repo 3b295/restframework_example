@@ -10,20 +10,24 @@ from . import models
 site.register((models.GameModel, models.ClothingModel, models.BookModel))
 
 
-class MediaInline(admin.StackedInline):
+class OrderMediaInline(admin.StackedInline):
     model = models.OrderMap
 
 
 @admin.register(models.OrderModel)
 class OrderAdmin(admin.ModelAdmin):
-    inlines = [MediaInline]
+    inlines = [OrderMediaInline]
     list_display = ['id', 'buyer', 'address', 'phone_number', 'timestamp']
+
+
+class ShoppingMediaInline(admin.StackedInline):
+    model = models.ShoppingCartMap
 
 
 @admin.register(models.ShoppingCartModel)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    # filter_horizontal = ('products',)
-    ...
+    inlines = [ShoppingMediaInline]
+    #filter_horizontal = ('goods',)
 
 
 site.register(models.User, UserAdmin)  # FIX:自己添加的字段不在这个表单内

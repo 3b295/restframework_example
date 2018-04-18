@@ -67,19 +67,23 @@ class OrderMap(models.Model):
     numbers = models.PositiveIntegerField(default=1, blank=False)
 
 
+class ShoppingCartMap(models.Model):
+    shopping_cart = models.ForeignKey('ShoppingCartModel', on_delete=models.CASCADE)
+    product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE)
+
+    numbers = models.PositiveIntegerField(default=1, blank=False)
+
+
 class ShoppingCartModel(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    product = models.ForeignKey(BaseProductModel, on_delete=models.CASCADE)
-    product_num = models.IntegerField(default=1)
-    add_time = models.DateTimeField(auto_now=True)
+    goods = models.ManyToManyField(BaseProductModel, through='ShoppingCartMap', related_name='shopping_cart')
 
     class Meta:
         verbose_name = "购物车"
         verbose_name_plural = verbose_name
-        unique_together = ('owner', 'product')
 
     def __str__(self):
-        return '{} | {}'.format(self.owner.username, self.product.name)
+        return "{}'s Shopping".format(self.owner.username)
 
 
 

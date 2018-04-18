@@ -12,6 +12,5 @@ urlpatterns = format_suffix_patterns([
     path('books/<pk>/', apis.BookDetail.as_view(), name='book-detail'),
     path('clothes/', apis.ClothingList.as_view()),
     path('clothes/<pk>/', apis.ClothingDetail.as_view(), name='clothing-detail'),
-    path('shopping-cart/', apis.ShoppingCartList.as_view()),
     path('shopping-cart/<pk>/', apis.ShoppingCartDetail.as_view(), name='shopping-cart'),
 ])
