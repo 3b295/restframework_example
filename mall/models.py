@@ -1,3 +1,5 @@
+import json
+
 from decimal import Decimal
 from django.core.validators import RegexValidator, MinValueValidator
 from django.db import models
@@ -16,9 +18,23 @@ class User(AbstractUser):
 class BaseProductModel(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=20, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    attr = models.TextField(editable=False)
 
     def __str__(self):
         return self.name
+
+    def create_category(self):
+        CategoryModel.objects.create(name='all', product=self)
+
+    def save(self, *args, **kwargs):
+        raw = {}
+        for key, value in self.__dict__.items():
+            if key not in {'_state', 'id', 'name', 'price', 'attr'} and not key.endswith('_id'):
+                raw[key] = value
+        self.attr = json.dumps(raw)
+
+        super().save(*args, **kwargs)
+        self.create_category()
 
 
 class GameModel(BaseProductModel):
@@ -34,13 +50,41 @@ class GameModel(BaseProductModel):
 
     platform = models.CharField(max_length=10, choices=PLATFORM_CHOICE, blank=False, null=False)
 
+    def create_category(self):
+        super().create_category()
+        CategoryModel.objects.create(name='game', product=self)
+
 
 class ClothingModel(BaseProductModel):
     size = models.PositiveIntegerField()
 
+    def create_category(self):
+        super().create_category()
+        CategoryModel.objects.create(name='clothing', product=self)
+
+
+class CostModel(ClothingModel):
+    color = models.CharField(max_length=255)
+
+    def create_category(self):
+        super().create_category()
+        CategoryModel.objects.create(name='cost', product=self)
+
 
 class BookModel(BaseProductModel):
     publisher = models.CharField(max_length=255)
+
+    def create_category(self):
+        super().create_category()
+        CategoryModel.objects.create(name='book', product=self)
+
+
+class CategoryModel(models.Model):
+    name = models.CharField(max_length=255, blank=False)
+    product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE, related_name='category')
+
+    def __str__(self):
+        return '{} -> {}'.format(self.product.name, self.name)
 
 
 class OrderModel(models.Model):

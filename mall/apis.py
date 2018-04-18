@@ -12,8 +12,9 @@ from .permissions import IsOwner
 
 
 class ProductList(generics.ListAPIView):
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('name',)
+    filter_fields = ('category__name', )
 
     queryset = models.BaseProductModel.objects.all()
     serializer_class = serializers.ProductSerializer
@@ -47,9 +48,8 @@ class ClothingDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class BookList(generics.ListCreateAPIView):
-    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    filter_fields = ('name', 'id', 'price')
 
     queryset = models.BookModel.objects.all()
     serializer_class = serializers.BookSerializer

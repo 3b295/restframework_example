@@ -21,6 +21,8 @@ class GameSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    attr = serializers.JSONField()
+
     class Meta:
         model = models.BaseProductModel
         fields = '__all__'
