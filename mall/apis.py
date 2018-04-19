@@ -18,6 +18,9 @@ class ProductList(generics.ListAPIView):
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('name',)
     filter_fields = ('category__name',)
+
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
+
     pagination_class = paginations.StandardResultsSetPagination
 
     queryset = models.BaseProductModel.objects.all()
@@ -26,6 +29,7 @@ class ProductList(generics.ListAPIView):
 
 class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
+
     queryset = models.BaseProductModel.objects.all()
     serializer_class = serializers.ProductSerializer
 
@@ -34,27 +38,37 @@ class GameList(generics.ListCreateAPIView):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
+
+    pagination_class = paginations.StandardResultsSetPagination
+
     queryset = models.GameModel.objects.all()
     serializer_class = serializers.GameSerializer
-    pagination_class = paginations.StandardResultsSetPagination
 
 
 class GameDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
+
     queryset = models.GameModel.objects.all()
     serializer_class = serializers.GameSerializer
 
 
 class ClothingList(generics.ListCreateAPIView):
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('name',)
+    filter_fields = ('category__name',)
+
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
+
+    pagination_class = paginations.StandardResultsSetPagination
 
     queryset = models.ClothingModel.objects.all()
     serializer_class = serializers.ClothingSerializer
-    pagination_class = paginations.StandardResultsSetPagination
 
 
 class ClothingDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
+
     queryset = models.ClothingModel.objects.all()
     serializer_class = serializers.ClothingSerializer
 
@@ -63,12 +77,16 @@ class BookList(generics.ListCreateAPIView):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
+
     queryset = models.BookModel.objects.all()
     serializer_class = serializers.BookSerializer
     pagination_class = paginations.StandardResultsSetPagination
 
 
 class BookDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
+
     queryset = models.BookModel.objects.all()
     serializer_class = serializers.BookSerializer
 

@@ -63,12 +63,10 @@ class ClothingModel(BaseProductModel):
         CategoryModel.objects.create(name='clothing', product=self)
 
 
-class CostModel(ClothingModel):
-    color = models.CharField(max_length=255)
-
-    def create_category(self):
-        super().create_category()
-        CategoryModel.objects.create(name='cost', product=self)
+class ClothingAttrModel(models.Model):
+    product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE, related_name='attrs')
+    name = models.CharField(max_length=255, verbose_name='属性名')
+    value = models.CharField(max_length=255, verbose_name='值')
 
 
 class BookModel(BaseProductModel):
@@ -127,7 +125,3 @@ class ShoppingCartModel(models.Model):
 
     def __str__(self):
         return "{}'s {}".format(self.owner.username, self.product.name)
-
-
-
-

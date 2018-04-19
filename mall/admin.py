@@ -23,7 +23,6 @@ class OrderAdmin(admin.ModelAdmin):
 site.register(models.User, UserAdmin)  # FIX:自己添加的字段不在这个表单内
 site.register(models.ShoppingCartModel)
 site.register(models.CategoryModel)
-site.register(models.CostModel)
 
 
 

@@ -10,3 +10,4 @@ django-filter = "*"
 
 [dev-packages]
 ipython = "*"
+requests = "*"
