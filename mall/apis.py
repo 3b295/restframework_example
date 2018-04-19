@@ -101,10 +101,10 @@ class ShoppingCartList(generics.ListCreateAPIView):
         if self.request.method == 'GET':
             queryset = self.filter_queryset(self.get_queryset())
             serializer = serializers.ShoppingCartReadOnlySerializer(queryset, many=True)
-            return Response(
-                {'total price': queryset.filter(is_active=True).aggregate(price=Sum(F('product__price') * F('numbers'),
-                                                                          output_field=FloatField()))['price'],
-                 'result': serializer.data})
+            return Response({
+                'total price': queryset.filter(is_active=True).aggregate(price=Sum(F('product__price') * F('numbers'),
+                                                                                   output_field=FloatField()))['price'],
+                'result': serializer.data})
         else:
             return super().list(request, *args, **kwargs)
 
@@ -125,9 +125,18 @@ class OrderList(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        price = models.ShoppingCartModel.objects.filter(owner=request.user).filter(is_active=True).aggregate(
+                    price=Sum(F('product__price') * F('numbers'),
+                              output_field=FloatField())
+                )['price']
+        if not price:
+            return Response({'detail': '至少需要选中一个商品'}, status=status.HTTP_400_BAD_REQUEST)
+
         order = models.OrderModel.objects.create(owner=request.user,
                                                  address=serializer.data['address'],
                                                  phone_number=serializer.data['phone_number'],
+                                                 status=models.OrderModel.COMMIT,
+                                                 price=price,
                                                  )
 
         for item in models.ShoppingCartModel.objects.filter(owner=request.user):
@@ -137,19 +146,12 @@ class OrderList(generics.ListCreateAPIView):
                                                real_price=item.product.price,
                                                numbers=item.numbers)
                 item.delete()
-                print('1')
-                from IPython import embed;
-                embed()
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class OrderDetail(mixins.RetrieveModelMixin,
-                  generics.GenericAPIView):
+class OrderDetail(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated, IsOwner)
     queryset = models.OrderModel.objects.all()
     serializer_class = serializers.OrderSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)

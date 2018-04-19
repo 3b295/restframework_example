@@ -79,17 +79,23 @@ class ProductTest(APITestCase):
         self.assertEqual(resp.data['platform'], platform)
 
 
-class ShoppingCartTester(APITestCase):
-
+class BlankUserMixin:
     def setUp(self):
         self.username = '09239)(*()#'
         self.password = '0920()34hj)(oisdf'
         self.user = models.User.objects.create(username=self.username, password=make_password(self.password))
 
+    def login(self):
+        self.client.login(username=self.username, password=self.password)
+
+
+class ShoppingCartTester(BlankUserMixin, APITestCase):
+
     def test_get(self):
         path = '/shopping-cart/'
 
-        self.client.login(username=self.username, password=self.password)
+        self.login()
+
         resp = self.client.get(path)
 
         self.assertDictEqual(resp.data, {"total price": None, "result": []})
@@ -97,7 +103,7 @@ class ShoppingCartTester(APITestCase):
     def test_add(self):
         path = '/shopping-cart/'
 
-        self.client.login(username=self.username, password=self.password)
+        self.login()
 
         ps = []
         for i in range(10):
@@ -116,7 +122,7 @@ class ShoppingCartTester(APITestCase):
     def test_is_active(self):
         path = '/shopping-cart/'
 
-        self.client.login(username=self.username, password=self.password)
+        self.login()
         p = models.BaseProductModel.objects.create(name='test', price=1)
 
         self.client.post(path, data={'product': p.id, 'numbers': 1})
@@ -129,5 +135,43 @@ class ShoppingCartTester(APITestCase):
 
         resp = self.client.get(path)
         self.assertEqual(resp.data['total price'], None)
+
+
+class OrderTester(BlankUserMixin, APITestCase):
+
+    def test_commit_null(self):
+        path = '/orders/'
+        self.login()
+        resp = self.client.post(path, data={'address': 'test', 'numbers': '21324234'})
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_commit_success(self):
+        path = '/orders/'
+        shop_path = '/shopping-cart/'
+        self.login()
+
+        name = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+        p = models.BaseProductModel.objects.create(name=name, price=1)
+        self.client.post(shop_path, data={'product': p.id, 'numbers': 1})
+
+        resp = self.client.post(path, data={'address': 'test', 'phone_number': '21324234'})
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+    def test_delete_shopping_cart_before_commit(self):
+        path = '/orders/'
+        shop_path = '/shopping-cart/'
+        self.login()
+
+        name = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+        p = models.BaseProductModel.objects.create(name=name, price=1)
+        self.client.post(shop_path, data={'product': p.id, 'numbers': 1})
+        self.client.post(path, data={'address': 'test', 'phone_number': '21324234'})
+        resp = self.client.get(shop_path)
+        self.assertEqual(resp.data['total price'], None)
+
+
+
+
+
 
 

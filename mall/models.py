@@ -86,10 +86,20 @@ class CategoryModel(models.Model):
 
 
 class OrderModel(models.Model):
+    COMMIT = 0
+    COMPLETE = 1
+
+    STATUES_CHOICE = (
+        (COMMIT, 'commit'),
+        (COMPLETE, 'complete'),
+    )
+
     owner = models.ForeignKey('User', on_delete=models.Case)
 
     products = models.ManyToManyField(BaseProductModel, through='OrderMap')
 
+    status = models.IntegerField(choices=STATUES_CHOICE)
+    price = models.DecimalField(max_digits=20, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     timestamp = models.DateTimeField(auto_now=True)
     address = models.CharField(max_length=255, blank=False)
     phone_regex = RegexValidator(regex=r'^\+?\d\d+$', message=r"电话号码必须满足 ^\+?\d\d+$ 规则.")
