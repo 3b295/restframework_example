@@ -63,12 +63,10 @@ class ClothingModel(BaseProductModel):
         CategoryModel.objects.create(name='clothing', product=self)
 
 
-class CostModel(ClothingModel):
-    color = models.CharField(max_length=255)
-
-    def create_category(self):
-        super().create_category()
-        CategoryModel.objects.create(name='cost', product=self)
+class ClothingAttrModel(models.Model):
+    product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE, related_name='attrs')
+    name = models.CharField(max_length=255, verbose_name='属性名')
+    value = models.CharField(max_length=255, verbose_name='值')
 
 
 class BookModel(BaseProductModel):
@@ -88,24 +86,33 @@ class CategoryModel(models.Model):
 
 
 class OrderModel(models.Model):
-    buyer = models.ForeignKey('User', on_delete=models.Case)
-    goods = models.ManyToManyField(BaseProductModel, through='OrderMap')
+    COMMIT = 0
+    COMPLETE = 1
+
+    STATUES_CHOICE = (
+        (COMMIT, 'commit'),
+        (COMPLETE, 'complete'),
+    )
+
+    owner = models.ForeignKey('User', on_delete=models.Case)
+
+    products = models.ManyToManyField(BaseProductModel, through='OrderMap')
+
+    status = models.IntegerField(choices=STATUES_CHOICE)
+    price = models.DecimalField(max_digits=20, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     timestamp = models.DateTimeField(auto_now=True)
     address = models.CharField(max_length=255, blank=False)
-
-    phone_regex = RegexValidator(regex=r'^\+?\d\d+$',
-                                 message=r"电话号码必须满足 ^\+?\d\d+$ 规则.")
+    phone_regex = RegexValidator(regex=r'^\+?\d\d+$', message=r"电话号码必须满足 ^\+?\d\d+$ 规则.")
     phone_number = models.CharField(validators=[phone_regex], blank=True, max_length=20)
 
     def __str__(self):
-        return self.buyer.username
+        return self.owner.username
 
     class Meta:
         ordering = ('timestamp',)
 
 
 class OrderMap(models.Model):
-    """多对多表"""
     order = models.ForeignKey('OrderModel', on_delete=models.CASCADE)
     product = models.ForeignKey('BaseProductModel', on_delete=models.CASCADE)
 
@@ -128,7 +135,3 @@ class ShoppingCartModel(models.Model):
 
     def __str__(self):
         return "{}'s {}".format(self.owner.username, self.product.name)
-
-
-
-
