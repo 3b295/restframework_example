@@ -94,16 +94,17 @@ class BookDetail(generics.RetrieveUpdateDestroyAPIView):
 class ShoppingCartList(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = models.ShoppingCartModel.objects.all()
-    serializer_class = serializers.ShoppingCartSerializer
+    serializer_class = serializers.ShoppingCartCreateSerializer
     filter_backends = (IsOwnerFilterBackend,)
 
     def list(self, request, *args, **kwargs):
         if self.request.method == 'GET':
             queryset = self.filter_queryset(self.get_queryset())
             serializer = serializers.ShoppingCartReadOnlySerializer(queryset, many=True)
-            return Response({'total price': queryset.aggregate(price=Sum(F('product__price') * F('numbers'),
-                                                                         output_field=FloatField()))['price'],
-                             'result': serializer.data})
+            return Response(
+                {'total price': queryset.filter(is_active=True).aggregate(price=Sum(F('product__price') * F('numbers'),
+                                                                          output_field=FloatField()))['price'],
+                 'result': serializer.data})
         else:
             return super().list(request, *args, **kwargs)
 
@@ -111,7 +112,7 @@ class ShoppingCartList(generics.ListCreateAPIView):
 class ShoppingCartDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsOwner)
     queryset = models.ShoppingCartModel.objects.all()
-    serializer_class = serializers.ShoppingCartSerializer
+    serializer_class = serializers.ShoppingCartDetailSerializer
 
 
 class OrderList(generics.ListCreateAPIView):
@@ -137,7 +138,8 @@ class OrderList(generics.ListCreateAPIView):
                                                numbers=item.numbers)
                 item.delete()
                 print('1')
-                from IPython import embed;embed()
+                from IPython import embed;
+                embed()
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -151,5 +153,3 @@ class OrderDetail(mixins.RetrieveModelMixin,
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
-
-

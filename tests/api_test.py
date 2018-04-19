@@ -1,7 +1,11 @@
-from requests.auth import HTTPBasicAuth
+import random
+import string
+
+from urllib.parse import urljoin
 from rest_framework import status
-from rest_framework.test import APITestCase, RequestsClient, APIClient
+from rest_framework.test import APITestCase, APIClient
 from mall import models
+from django.contrib.auth.hashers import make_password
 
 
 class AccountTests(APITestCase):
@@ -73,5 +77,57 @@ class ProductTest(APITestCase):
         self.assertEqual(resp.data['name'], name)
         self.assertEqual(float(resp.data['price']), float(price))
         self.assertEqual(resp.data['platform'], platform)
+
+
+class ShoppingCartTester(APITestCase):
+
+    def setUp(self):
+        self.username = '09239)(*()#'
+        self.password = '0920()34hj)(oisdf'
+        self.user = models.User.objects.create(username=self.username, password=make_password(self.password))
+
+    def test_get(self):
+        path = '/shopping-cart/'
+
+        self.client.login(username=self.username, password=self.password)
+        resp = self.client.get(path)
+
+        self.assertDictEqual(resp.data, {"total price": None, "result": []})
+
+    def test_add(self):
+        path = '/shopping-cart/'
+
+        self.client.login(username=self.username, password=self.password)
+
+        ps = []
+        for i in range(10):
+            name = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+            ps.append(models.BaseProductModel.objects.create(name=name, price=i+1))
+
+        resp = self.client.post(path, data={'product': ps[0].id, 'numbers': 1})
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        for i in range(1, 10):
+            self.client.post(path, data={'product': ps[i].id, 'numbers': i+1})
+
+        resp = self.client.get(path)
+        self.assertEqual(resp.data['total price'], 385.0)
+
+    def test_is_active(self):
+        path = '/shopping-cart/'
+
+        self.client.login(username=self.username, password=self.password)
+        p = models.BaseProductModel.objects.create(name='test', price=1)
+
+        self.client.post(path, data={'product': p.id, 'numbers': 1})
+
+        resp = self.client.get(path)
+        self.assertEqual(resp.data['total price'], 1.0)
+
+        resp = self.client.put(path + str(p.id) + '/', data={'numbers': 1, 'is_active': False})
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        resp = self.client.get(path)
+        self.assertEqual(resp.data['total price'], None)
 
 

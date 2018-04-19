@@ -69,16 +69,29 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartReadOnlySerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = models.ShoppingCartModel
         fields = ('id', 'numbers', 'product', 'is_active')
         depth = 1
 
 
-class ShoppingCartSerializer(serializers.ModelSerializer):
+class ShoppingCartCreateSerializer(serializers.ModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
     numbers = serializers.IntegerField(default=1, min_value=1)
-    is_active = serializers.BooleanField(default=True)
+    is_active = serializers.HiddenField(default=True)
+
+    class Meta:
+        model = models.ShoppingCartModel
+        fields = '__all__'
+
+
+class ShoppingCartDetailSerializer(serializers.ModelSerializer):
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    numbers = serializers.IntegerField(default=1, min_value=1)
+    is_active = serializers.BooleanField()
+    product = ProductSerializer(read_only=True)
 
     class Meta:
         model = models.ShoppingCartModel
